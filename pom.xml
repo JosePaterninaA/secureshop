@@ -13,6 +13,10 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>secureshop</name>
 	<description>Demo project for Spring Security</description>
+	<packaging>pom</packaging>
+	<modules>
+		<module>products</module>
+	</modules>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

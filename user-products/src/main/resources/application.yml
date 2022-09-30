@@ -1,5 +1,6 @@
 spring:
-  name: user-products
+  application:
+    name: user-products
   datasource:
     url: jdbc:h2:file:/data/secureshop_user-products_db
     username: root
@@ -18,3 +19,9 @@ spring:
       path: /h2-console
 server:
   port: 8082
+
+eureka:
+  client:
+    enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:8040/eureka

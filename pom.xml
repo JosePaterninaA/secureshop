@@ -16,6 +16,7 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>products</module>
+		<module>user-products</module>
 	</modules>
 	<properties>
 		<java.version>17</java.version>

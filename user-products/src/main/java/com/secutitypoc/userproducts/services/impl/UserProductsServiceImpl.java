@@ -2,7 +2,7 @@ package com.secutitypoc.userproducts.services.impl;
 
 import com.secutitypoc.userproducts.exceptions.InvalidRequestException;
 import com.secutitypoc.userproducts.exceptions.UserNotFoundException;
-import com.secutitypoc.userproducts.http.feign.ProductService;
+import com.secutitypoc.userproducts.http.feign.ProductsService;
 import com.secutitypoc.userproducts.http.feign.models.Product;
 import com.secutitypoc.userproducts.models.UserProducts;
 import com.secutitypoc.userproducts.models.rest.Request;
@@ -28,7 +28,7 @@ public class UserProductsServiceImpl implements UserProductsService {
     private UserProductsRepository userProductsRepository;
 
     @Autowired
-    private ProductService productService;
+    private ProductsService productsService;
 
     @Override
     public List<Product> getAllUserProductsDetailsByUserId(Long userId) throws UserNotFoundException {
@@ -38,7 +38,7 @@ public class UserProductsServiceImpl implements UserProductsService {
         return productIds
                 .stream()
                 .map(productId ->{
-                    ResponseEntity<Product> productResponse = productService.getProductById(productId);
+                    ResponseEntity<Product> productResponse = productsService.getProductById(productId);
                     return productResponse.getStatusCode() == HttpStatus.OK? productResponse.getBody():null;
                 }).collect(Collectors.toList());
     }
@@ -53,7 +53,7 @@ public class UserProductsServiceImpl implements UserProductsService {
                 .getProductIds()
                 .stream()
                 .map(productId -> {
-                    if(!productService.existsProductId(productId) || userProducts.getProductIds().contains(productId)) return Constants.FAILED;
+                    if(!productsService.existsProductId(productId) || userProducts.getProductIds().contains(productId)) return Constants.FAILED;
                     userProducts.getProductIds().add(productId);
                     return Constants.ADDED;
                 })
@@ -75,7 +75,7 @@ public class UserProductsServiceImpl implements UserProductsService {
                 .getProductIds()
                 .stream()
                 .map(productId -> {
-                    if(!productService.existsProductId(productId)) return Constants.FAILED;
+                    if(!productsService.existsProductId(productId)) return Constants.FAILED;
                     userProducts.getProductIds().remove(productId);
                     return Constants.REMOVED;
                 })

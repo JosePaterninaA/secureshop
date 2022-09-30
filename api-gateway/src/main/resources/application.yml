@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: products
+          uri: lb://PRODUCTS
+          predicates:
+            - Path=/products/**
+            - Method=POST,GET
+          filters:
+            - RemoveRequestHeader=Cookie
+
+        - id: user-products
+          uri: lb://USER-PRODUCTS
+          predicates:
+            - Path=/user-products/**
+            - Method=POST,GET
+          filters:
+            - RemoveRequestHeader=Cookie
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:8040/eureka

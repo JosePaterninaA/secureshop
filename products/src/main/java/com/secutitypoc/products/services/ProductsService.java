@@ -12,4 +12,6 @@ public interface ProductsService {
     Page<Product> getAllProducts(Pageable pageable);
 
     Product addProduct(ProductDto product);
+
+    Boolean existsProductById(Long id);
 }

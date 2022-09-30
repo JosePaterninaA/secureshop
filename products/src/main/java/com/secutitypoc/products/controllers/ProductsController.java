@@ -33,4 +33,9 @@ public class ProductsController {
     public ResponseEntity<Product> addProduct(@RequestBody ProductDto product){
         return ResponseEntity.ok(productsService.addProduct(product));
     }
+
+    @GetMapping("/products/validate/{id}")
+    public ResponseEntity<Boolean> existsProductById(@PathVariable("id") Long id){
+        return ResponseEntity.ok(productsService.existsProductById(id));
+    }
 }

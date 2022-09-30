@@ -10,5 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface ProductsService {
     @GetMapping("/products/{id}")
     ResponseEntity<Product> getProductById(@PathVariable("id") Long id);
-    Boolean existsProductId(Long id);
+    @GetMapping("/products/validate/{id}")
+    Boolean existsProductId(@PathVariable("id") Long id);
 }

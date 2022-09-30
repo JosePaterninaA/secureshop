@@ -5,11 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.util.List;
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,5 +18,7 @@ public class UserProducts {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long userId;
-    private List<Long> productIds;
+    @Column
+    @ElementCollection(targetClass=Long.class)
+    private Set<Long> productIds;
 }

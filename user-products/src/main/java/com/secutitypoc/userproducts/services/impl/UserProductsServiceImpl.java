@@ -17,8 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,7 +36,7 @@ public class UserProductsServiceImpl implements UserProductsService {
     public List<Product> getAllUserProductsDetailsByUserId(Long userId) throws UserNotFoundException {
         Optional<UserProducts> userProducts = userProductsRepository.findByUserId(userId);
         if(userProducts.isEmpty()) throw new UserNotFoundException(Constants.DATA_NOT_FOUND_MESSAGE);
-        List<Long> productIds = userProducts.get().getProductIds();
+        Set<Long> productIds = userProducts.get().getProductIds();
         return productIds
                 .stream()
                 .map(productId ->{
@@ -47,21 +49,39 @@ public class UserProductsServiceImpl implements UserProductsService {
     public Response addProductsToUser(Request request) throws InvalidRequestException, UserNotFoundException {
         if(request.getUserId() == null || request.getProductIds() == null) throw new InvalidRequestException(Constants.INVALID_REQUEST_MESSAGE);
         Optional<UserProducts> userProductsOptional = userProductsRepository.findByUserId(request.getUserId());
-        if(userProductsOptional.isEmpty()) throw new UserNotFoundException(Constants.DATA_NOT_FOUND_MESSAGE);
-        UserProducts userProducts= userProductsOptional.get();
-        List<String> responseCodes = request
-                .getProductIds()
-                .stream()
-                .map(productId -> {
-                    if(!productsService.existsProductId(productId) || userProducts.getProductIds().contains(productId)) return Constants.FAILED;
-                    userProducts.getProductIds().add(productId);
-                    return Constants.ADDED;
-                })
-                .collect(Collectors.toList());
-        userProductsRepository.save(userProducts);
         Response response = new AddUserProductsResponse();
-        response.setUserId(userProducts.getUserId());
-        response.setResponses(responseCodes);
+
+        if(userProductsOptional.isPresent()){
+            UserProducts userProducts= userProductsOptional.get();
+            List<String> responseCodes = request
+                    .getProductIds()
+                    .stream()
+                    .map(productId -> {
+                        if (!productsService.existsProductId(productId) || userProducts.getProductIds().contains(productId))
+                            return Constants.FAILED;
+                        userProducts.getProductIds().add(productId);
+                        return Constants.ADDED;
+                    }).toList();
+            userProductsRepository.save(userProducts);
+            response.setUserId(userProducts.getUserId());
+            response.setResponses(responseCodes);
+
+        }else {
+            UserProducts userProducts = new UserProducts();
+            userProducts.setUserId(request.getUserId());
+            userProducts.setProductIds(new HashSet<>());
+            List<String> responseCodes = request
+                    .getProductIds()
+                    .stream()
+                    .map(productId -> {
+                        if (!productsService.existsProductId(productId)) return Constants.FAILED;
+                        userProducts.getProductIds().add(productId);
+                        return Constants.ADDED;
+                    }).toList();
+            userProductsRepository.save(userProducts);
+            response.setUserId(userProducts.getUserId());
+            response.setResponses(responseCodes);
+        }
         return response;
     }
 
@@ -69,21 +89,34 @@ public class UserProductsServiceImpl implements UserProductsService {
     public Response removeProductsFromUser(Request request) throws UserNotFoundException, InvalidRequestException {
         if(request.getUserId() == null || request.getProductIds() == null) throw new InvalidRequestException(Constants.INVALID_REQUEST_MESSAGE);
         Optional<UserProducts> userProductsOptional = userProductsRepository.findByUserId(request.getUserId());
-        if(userProductsOptional.isEmpty()) throw new UserNotFoundException(Constants.DATA_NOT_FOUND_MESSAGE);
-        UserProducts userProducts= userProductsOptional.get();
-        List<String> responseCodes = request
-                .getProductIds()
-                .stream()
-                .map(productId -> {
-                    if(!productsService.existsProductId(productId)) return Constants.FAILED;
-                    userProducts.getProductIds().remove(productId);
-                    return Constants.REMOVED;
-                })
-                .collect(Collectors.toList());
-        userProductsRepository.save(userProducts);
         Response response = new RemoveUserProductsResponse();
-        response.setUserId(userProducts.getUserId());
-        response.setResponses(responseCodes);
+
+        if(userProductsOptional.isEmpty()){
+            UserProducts userProducts= new UserProducts();
+            userProducts.setUserId(request.getUserId());
+            userProducts.setProductIds(new HashSet<>());
+            List<String> responseCodes = request
+                    .getProductIds()
+                    .stream()
+                    .map(productId -> Constants.FAILED)
+                    .toList();
+            response.setUserId(userProducts.getUserId());
+            response.setResponses(responseCodes);
+        }else{
+            UserProducts userProducts= userProductsOptional.get();
+            List<String> responseCodes = request
+                    .getProductIds()
+                    .stream()
+                    .map(productId -> {
+                        if(!productsService.existsProductId(productId)) return Constants.FAILED;
+                        userProducts.getProductIds().remove(productId);
+                        return Constants.REMOVED;
+                    })
+                    .toList();
+            userProductsRepository.save(userProducts);
+            response.setUserId(userProducts.getUserId());
+            response.setResponses(responseCodes);
+        }
         return response;
     }
 }

@@ -3,7 +3,14 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      default-filters:
+        - name: JwtFilter
       routes:
+        - id: auth-server
+          uri: lb://JWT-AUTH-SERVER
+          predicates:
+            - Path=/api/auth/**
+            - Method=POST
         - id: products
           uri: lb://PRODUCTS
           predicates:
@@ -11,7 +18,6 @@ spring:
             - Method=POST,GET
           filters:
             - RemoveRequestHeader=Cookie
-
         - id: user-products
           uri: lb://USER-PRODUCTS
           predicates:
@@ -19,7 +25,11 @@ spring:
             - Method=POST,GET
           filters:
             - RemoveRequestHeader=Cookie
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://jwt-auth-server/api/auth/login
 server:
   port: 8080
 
@@ -28,3 +38,6 @@ eureka:
     enabled: true
     serviceUrl:
       defaultZone: http://localhost:8040/eureka
+
+jwt:
+  secret: secret
